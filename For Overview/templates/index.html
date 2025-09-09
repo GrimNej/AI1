@@ -1,0 +1,27 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MCQ Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>MCQ Generator</h1>
+
+    <input type="text" id="subject" placeholder="Enter subject/topic">
+    <input type="number" id="mcq_count" min="3" max="10" value="5">
+    <select id="tone">
+      <option value="Simple">Simple</option>
+      <option value="Intermediate" selected>Intermediate</option>
+      <option value="Advanced">Advanced</option>
+    </select>
+    <button onclick="generateMCQs()">Generate</button>
+
+    <div id="quiz"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

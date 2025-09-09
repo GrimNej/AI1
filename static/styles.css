@@ -1,0 +1,98 @@
+/* General body styles */
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+}
+
+/* Main container */
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Input, select, and button styling */
+input, select, button {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Submit buttons */
+button[type="submit"] {
+    margin-top: 15px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button[type="submit"]:hover {
+    background: #0056b3;
+}
+
+/* Question container */
+.question {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+/* Question answer buttons */
+.question button {
+    display: block;
+    margin: 5px 0;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: #f0f0f0;
+    transition: background 0.2s, color 0.2s;
+}
+
+/* Disabled buttons */
+.question button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Correct answer highlight */
+.question button.correct {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+/* Wrong answer highlight */
+.question button.wrong {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+/* Live score display */
+#score {
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+/* Links styling */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Round {{ round }} - {{ difficulty }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="{{ url_for('static', filename='settings.js') }}"></script>
+  <script src="{{ url_for('static', filename='settings.js') }}"></script>
+</head>
+<body>
+<div class="container">
+  <h1>Round {{ round }} - {{ difficulty }} Questions</h1>
+  <p>Answer at least 5 out of 10 to advance.</p>
+  <p id="progress">Answered 0 / {{ quiz|length }}</p>
+
+  <form id="quizForm" method="POST">
+    {% for q_id, q in quiz.items() %}
+    <div class="question">
+      <h3>{{ loop.index }}. {{ q.mcq }}</h3>
+
+      {% for opt, val in q.options.items() %}
+      <button type="button"
+              data-qid="{{ q_id }}"
+              data-opt="{{ opt }}"
+              onclick="selectAnswer(this, '{{ q.correct }}')">
+        {{ opt }}) {{ val }}
+      </button>
+      {% endfor %}
+
+      <input type="hidden" name="{{ q_id|string }}" id="input-{{ q_id }}">
+    </div>
+    {% endfor %}
+  </form>
+
+  <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</div>
+
+<script>
+let answered = new Set();
+const totalQuestions = {{ quiz|length }};
+const progressEl = document.getElementById("progress");
+const form = document.getElementById("quizForm");
+
+function selectAnswer(btn, correct) {
+  const qId = btn.dataset.qid;
+  const selectedOpt = btn.dataset.opt;
+  const buttons = document.querySelectorAll(`[data-qid='${qId}']`);
+  const correctNormalized = correct.toLowerCase().trim();
+  const selectedNormalized = selectedOpt.toLowerCase().trim();
+
+  if (selectedNormalized === correctNormalized) {
+      btn.style.background = "lightgreen";
+      btn.style.color = "white";
+      btn.style.fontWeight = "bold";
+  } else {
+      btn.style.background = "salmon";
+      btn.style.color = "white";
+      buttons.forEach(b => {
+          if (b.dataset.opt.toLowerCase().trim() === correctNormalized) {
+              b.style.background = "lightgreen";
+              b.style.color = "white";
+              b.style.fontWeight = "bold";
+          }
+      });
+  }
+
+  buttons.forEach(b => {
+    b.disabled = true;
+    b.style.cursor = "not-allowed";
+    if (!b.style.background) {
+      b.style.opacity = "0.6";
+    }
+  });
+
+  document.getElementById(`input-${qId}`).value = selectedOpt;
+  answered.add(qId);
+  progressEl.textContent = `Answered ${answered.size} / ${totalQuestions}`;
+
+  if (answered.size === totalQuestions) {
+      progressEl.textContent = `All questions answered! Submitting...`;
+      setTimeout(() => form.submit(), 1500);
+  }
+}
+
+// Settings functionality
+function toggleSettings() {
+    const menu = document.getElementById('settingsMenu');
+    menu.classList.toggle('show');
+}
+
+function closeSettings() {
+    document.getElementById('settingsMenu').classList.remove('show');
+}
+
+function sendFeedback() {
+    const subject = 'MCQ Game Feedback';
+    const body = 'Hi,\n\nI would like to share feedback about the MCQ Game:\n\n';
+    const mailtoLink = `mailto:grim98413@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+    closeSettings();
+}
+
+function toggleDarkMode() {
+    const body = document.body;
+    const icon = document.getElementById('darkModeIcon');
+    const text = document.getElementById('darkModeText');
+    
+    body.classList.toggle('dark-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+        icon.textContent = '☀️';
+        text.textContent = 'Light Mode';
+        localStorage.setItem('darkMode', 'enabled');
+    } else {
+        icon.textContent = '🌙';
+        text.textContent = 'Dark Mode';
+        localStorage.setItem('darkMode', 'disabled');
+    }
+    closeSettings();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeIcon').textContent = '☀️';
+        document.getElementById('darkModeText').textContent = 'Light Mode';
+    }
+    
+    document.addEventListener('click', function(event) {
+        const settingsDropdown = document.querySelector('.settings-dropdown');
+        if (!settingsDropdown.contains(event.target)) {
+            closeSettings();
+        }
+    });
+});
+</script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  color: white;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.container h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: 300;
+  font-size: 2em;
+}
+
+.container p {
+  text-align: center;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.question {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+}
+
+.question h3 {
+  margin: 0 0 15px 0;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.question button {
+  display: block;
+  margin: 8px 0;
+  padding: 12px 15px;
+  width: 100%;
+  text-align: left;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+  font-size: 1em;
+}
+
+.question button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.question button:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+#progress {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  margin: 25px 0;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.container a {
+  color: #ffffff;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.container a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+input[type="hidden"] {
+  display: none;
+}
+</style>
+</body>
+</html>

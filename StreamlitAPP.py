@@ -1,84 +1,56 @@
-import os
-import json
-import traceback
-import ast
+# # StreamlitAPP.py
+# import json
+# import re
+# import ast
+# import streamlit as st
+# import pandas as pd
+# from src.mcqgenerator.MCQGenerator import generate_mcq_chain
+# from src.mcqgenerator.utils import RESPONSE_JSON, get_table_data
 
-# remove code fences
-import re
-import pandas as pd
-import langchain
-from dotenv import load_dotenv
-import streamlit as st
-from src.mcqgenerator.utils import read_file,get_table_data
-from src.mcqgenerator.MCQGenerator import generate_evaluate_chains
-# from src.mcqgenerator.logger import logging
+# st.title("MCQ Generator App")
 
+# # Input for topic/subject
+# subject = st.text_input("Enter a topic/subject")
 
-#loading json file
-with open('E:\AI\Response.json','r') as file:
-    RESPONSE_JSON = json.load(file)
+# # Input for number of MCQs (min 3, max 10)
+# mcq_count = st.number_input("Number of MCQs", min_value=3, max_value=10, value=5, step=1)
 
-#creating a title for the app
-st.title("MCQs Creator")
+# # Button to generate MCQs
+# if st.button("Generate MCQs") and subject:
+#     with st.spinner("Generating MCQs..."):
+#         # Call the MCQ generation chain (always simple tone)
+#         response = generate_mcq_chain.invoke({
+#             "subject": subject,
+#             "number": mcq_count,
+#             "tone": "Intermidiate",
+#             "response_json": json.dumps(RESPONSE_JSON)
+#         })
+        
+#         quiz_json = response.get("quiz")
 
-#Create a form using st.form
-with st.form("user_inputs"):
-    #File uploaded
-    uploaded_file=st.file_uploader("Upload a PDF or text file")
+#         if not quiz_json or quiz_json.strip() == "":
+#             st.error("No quiz generated. Please wait 30 seconds and try again.")
+#             quiz = None
+#         else:
+#             # Remove code fences and clean string
+#             quiz_json = re.sub(r"^```json\s*", "", quiz_json.strip())
+#             quiz_json = re.sub(r"```$", "", quiz_json.strip())
+#             quiz_json = ' '.join(quiz_json.split())
 
-    #Input Fields
-    mcq_count=st.number_input("No. of MCQs", min_value=3, max_value=10)
+#             # Attempt parsing JSON first, fallback to ast.literal_eval
+#             try:
+#                 quiz = json.loads(quiz_json)
+#             except Exception:
+#                 try:
+#                     quiz = ast.literal_eval(quiz_json)
+#                 except Exception as e:
+#                     st.error(f"Error while parsing quiz: {e}")
+#                     quiz = None
 
-    #Subject
-    subject=st.text_input("Insert Subject", max_chars=20)
-
-    #Quiz Tone
-    tone=st.text_input("Complexity level of Questions", max_chars=20, placeholder="Simple")
-
-    #Add Button
-    button=st.form_submit_button("Create MCQs")
-
-    #Check if the button is clicked and all fields have input
-
-    if button and uploaded_file is not None and mcq_count and subject and tone:
-        with st.spinner("loading..."):
-            try:
-                text=read_file(uploaded_file)
-                response=generate_evaluate_chains(
-                    {
-                        "text": text,
-                        "number": mcq_count,
-                        "subject": subject,
-                        "tone": tone,
-                        "response_json": json.dumps(RESPONSE_JSON)
-                    }
-                )
-                # st.write(response)
-            except Exception as e:
-                traceback.print_exception(type(e),e,e.__traceback__)
-                st.error("Error")
-
-            else:
-                if isinstance(response, dict):
-                    #Extract quiz from the response
-                    quiz=response.get("quiz",None)
-
-
-                    cleaned = re.sub(r"^```json\n", "", quiz)
-                    cleaned = re.sub(r"\n```$", "", cleaned)
-
-                    data = ast.literal_eval(cleaned)   # handles single quotes, dict-style
-                    quiz=data
-
-                    if quiz is not None:
-                        table_data=get_table_data(quiz)
-                        if table_data is not None:
-                            df=pd.DataFrame(table_data)
-                            df.index=df.index+1
-                            st.table(df)
-                            #Display the review in a text box as well
-                            st.text_area(label="Review", value=response["review"])
-                        else:
-                            st.error("Error in the table data")
-                    else:
-                        st.write(response)
+#         # Display MCQs as a table
+#         if quiz:
+#             table_data = get_table_data(quiz)
+#             if table_data:
+#                 df = pd.DataFrame(table_data)
+#                 df.index = df.index + 1
+#                 st.table(df)

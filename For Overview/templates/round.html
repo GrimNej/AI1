@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Round {{ round }} - {{ difficulty }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="container">
+  <h1>Round {{ round }} - {{ difficulty }} Questions</h1>
+  <p>Answer at least 5 out of 10 to advance.</p>
+  <p id="progress">Answered 0 / {{ quiz|length }}</p>
+
+  <form id="quizForm" method="POST">
+    {% for q_id, q in quiz.items() %}
+    <div class="question">
+      <h3>{{ loop.index }}. {{ q.mcq }}</h3>
+
+      {% for opt, val in q.options.items() %}
+      <button type="button"
+              data-qid="{{ q_id }}"
+              data-opt="{{ opt }}"
+              onclick="selectAnswer(this, '{{ q.correct|e }}')">
+        {{ opt }}) {{ val }}
+      </button>
+      {% endfor %}
+
+      <input type="hidden" name="{{ q_id|string }}" id="input-{{ q_id }}">
+    </div>
+    {% endfor %}
+  </form>
+
+  <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</div>
+
+<script>
+let answered = new Set();
+const totalQuestions = {{ quiz|length }};
+const progressEl = document.getElementById("progress");
+const form = document.getElementById("quizForm");
+
+function selectAnswer(btn, correct) {
+  const qId = btn.dataset.qid;
+  const selectedOpt = btn.dataset.opt;
+  const buttons = document.querySelectorAll(`[data-qid='${qId}']`);
+
+  // Normalize to uppercase for comparison
+  const correctNormalized = correct.toUpperCase();
+  const selectedNormalized = selectedOpt.toUpperCase();
+
+  if (selectedNormalized === correctNormalized) {
+      btn.style.background = "lightgreen";
+  } else {
+      btn.style.background = "salmon";
+      buttons.forEach(b => {
+          if (b.dataset.opt.toUpperCase() === correctNormalized) {
+              b.style.background = "lightgreen";
+          }
+      });
+  }
+
+  // Disable all buttons for this question
+  buttons.forEach(b => b.disabled = true);
+
+  // Save answer for backend
+  document.getElementById(`input-${qId}`).value = selectedOpt;
+
+  // Track progress
+  answered.add(qId);
+  progressEl.textContent = `Answered ${answered.size} / ${totalQuestions}`;
+
+  // Auto-submit when all answered
+  if (answered.size === totalQuestions) {
+      form.submit();
+  }
+}
+</script>
+</body>
+</html>
